@@ -25,6 +25,12 @@ export default {
        label: {
            type: String,
            default: null
+       },
+       status: {
+           type: String,
+           validator: (val) => {
+               return ['current', 'pickup', 'dropoff'].indexOf(val) !== -1
+           }
        }
 
     },

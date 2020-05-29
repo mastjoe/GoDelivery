@@ -1955,15 +1955,9 @@ __webpack_require__.r(__webpack_exports__);
     Map: _Map__WEBPACK_IMPORTED_MODULE_2__["default"]
   },
   data: function data() {
-    return {
-      position: null
-    };
+    return {};
   },
-  methods: {
-    emitMapPosition: function emitMapPosition(event) {
-      this.position = event;
-    }
-  },
+  methods: {},
   mounted: function mounted() {}
 });
 
@@ -1981,6 +1975,16 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var _util__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ../util */ "./resources/js/util.js");
 /* harmony import */ var axios__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! axios */ "./node_modules/axios/index.js");
 /* harmony import */ var axios__WEBPACK_IMPORTED_MODULE_1___default = /*#__PURE__*/__webpack_require__.n(axios__WEBPACK_IMPORTED_MODULE_1__);
+/* harmony import */ var vuex__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! vuex */ "./node_modules/vuex/dist/vuex.esm.js");
+var _props$data$computed$;
+
+function ownKeys(object, enumerableOnly) { var keys = Object.keys(object); if (Object.getOwnPropertySymbols) { var symbols = Object.getOwnPropertySymbols(object); if (enumerableOnly) symbols = symbols.filter(function (sym) { return Object.getOwnPropertyDescriptor(object, sym).enumerable; }); keys.push.apply(keys, symbols); } return keys; }
+
+function _objectSpread(target) { for (var i = 1; i < arguments.length; i++) { var source = arguments[i] != null ? arguments[i] : {}; if (i % 2) { ownKeys(Object(source), true).forEach(function (key) { _defineProperty(target, key, source[key]); }); } else if (Object.getOwnPropertyDescriptors) { Object.defineProperties(target, Object.getOwnPropertyDescriptors(source)); } else { ownKeys(Object(source)).forEach(function (key) { Object.defineProperty(target, key, Object.getOwnPropertyDescriptor(source, key)); }); } } return target; }
+
+function _defineProperty(obj, key, value) { if (key in obj) { Object.defineProperty(obj, key, { value: value, enumerable: true, configurable: true, writable: true }); } else { obj[key] = value; } return obj; }
+
+//
 //
 //
 //
@@ -2027,14 +2031,12 @@ __webpack_require__.r(__webpack_exports__);
 //
 
 
-/* harmony default export */ __webpack_exports__["default"] = ({
+
+/* harmony default export */ __webpack_exports__["default"] = (_props$data$computed$ = {
   props: {
     placeholder: {
       type: String,
       "default": ''
-    },
-    position: {
-      type: Object
     },
     status: {
       type: String
@@ -2043,51 +2045,77 @@ __webpack_require__.r(__webpack_exports__);
   data: function data() {
     return {
       search: null,
-      autocomplete: null,
       places: [],
-      currentPositionAddress: ''
+      currentPosition: null
     };
   },
-  methods: {
+  computed: {},
+  methods: _objectSpread(_objectSpread({}, Object(vuex__WEBPACK_IMPORTED_MODULE_2__["mapMutations"])(['addMarker', 'updatePickUpPosition', 'updateDropOffPosition'])), {}, {
     queryGoogle: function queryGoogle() {
       var _this = this;
 
-      if (!this.position || this.search.length < 4 && this.status == "pickup") return false;
-      var params = "&key=".concat(_util__WEBPACK_IMPORTED_MODULE_0__["default"].api_key, "&input=").concat(this.search, "&radius=").concat(_util__WEBPACK_IMPORTED_MODULE_0__["default"].searchRadius, "&location=").concat(this.position.lat, ",").concat(this.position.lng);
+      if (this.search.length < 4 && this.status == "pickup") return false;
+      var params = "&key=".concat(_util__WEBPACK_IMPORTED_MODULE_0__["default"].api_key, "&input=").concat(this.search, "&radius=").concat(_util__WEBPACK_IMPORTED_MODULE_0__["default"].searchRadius, "&location=").concat(this.currentPosition.lat, ",").concat(this.currentPosition.lng);
       var url = "".concat(_util__WEBPACK_IMPORTED_MODULE_0__["default"].proxy, "https://maps.googleapis.com/maps/api/place/nearbysearch/json?").concat(params);
       axios__WEBPACK_IMPORTED_MODULE_1___default.a.defaults.headers.get['Content-Type'] = 'application/json';
-      axios__WEBPACK_IMPORTED_MODULE_1___default.a.get(url, {
-        headers: {
-          'Access-Control-Allow-Origin': '*',
-          'Access-Control-Allow-Headers': 'Content-Type, Authorization'
-        }
-      }).then(function (response) {
-        return _this.places = response.data.results;
+      axios__WEBPACK_IMPORTED_MODULE_1___default.a.get(url).then(function (_ref) {
+        var data = _ref.data;
+        _this.places = data.results;
+        console.log(data);
       })["catch"](function (error) {
         return console.log(error);
       });
-      console.log(url);
     },
-    getCurrentLocationAddress: function getCurrentLocationAddress() {
+    getCurrentPositionAddress: function getCurrentPositionAddress() {
       var _this2 = this;
 
-      var url = "".concat(_util__WEBPACK_IMPORTED_MODULE_0__["default"].proxy, "https://maps.googleapis.com/maps/api/geocode/json?latlng=").concat(this.position.lat, ",").concat(this.position.lng, "&key=").concat(_util__WEBPACK_IMPORTED_MODULE_0__["default"].api_key);
-      axios__WEBPACK_IMPORTED_MODULE_1___default.a.get(url).then(function (_ref) {
-        var data = _ref.data;
+      var params = "latlng=".concat(this.currentPosition.lat, ",").concat(this.currentPosition.lng, "&key=").concat(_util__WEBPACK_IMPORTED_MODULE_0__["default"].api_key);
+      var url = "".concat(_util__WEBPACK_IMPORTED_MODULE_0__["default"].proxy, "https://maps.googleapis.com/maps/api/geocode/json?").concat(params);
+      axios__WEBPACK_IMPORTED_MODULE_1___default.a.get(url).then(function (_ref2) {
+        var data = _ref2.data;
         _this2.search = data.results[0].formatted_address;
-        console.log(data);
+        var position = data.results[0].geometry.location;
+
+        _this2.handleMarking(position);
       })["catch"](function (error) {
         return console.log(error);
       });
     },
     clearAutocomplete: function clearAutocomplete() {
       this.places = [];
+    },
+    loadCurrentPosition: function loadCurrentPosition() {
+      this.currentPosition = this.$store.state.currentPosition;
+    },
+    handleMarking: function handleMarking(position) {
+      if (this.status == "pickup") {
+        this.$store.commit('updatePickUpPosition', position);
+        this.$store.commit('addMarker', {
+          position: position,
+          label: 'Pickup',
+          status: 'pickup'
+        });
+      } else {
+        this.$store.commit('updateDropOffPosition', position);
+        this.$store.commit('addMarker', {
+          position: position,
+          label: 'DropOff',
+          status: 'dropoff'
+        });
+      }
+    },
+    selectPlace: function selectPlace(place) {
+      var address = place.vicinity;
+      var position = place.geometry.location;
+      this.search = address;
+      this.handleMarking(position);
+      this.clearAutocomplete();
     }
-  },
-  computed: {},
-  mounted: function mounted() {// console.log(this.getPosititon())
-  }
-});
+  })
+}, _defineProperty(_props$data$computed$, "computed", {}), _defineProperty(_props$data$computed$, "mounted", function mounted() {
+  this.loadCurrentPosition();
+  console.log(this.$store.state.markers);
+}), _props$data$computed$);
 
 /***/ }),
 
@@ -2243,6 +2271,13 @@ __webpack_require__.r(__webpack_exports__);
 __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var _GoogleMap__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ./GoogleMap */ "./resources/js/components/GoogleMap.vue");
 /* harmony import */ var _MapMarker__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ./MapMarker */ "./resources/js/components/MapMarker.vue");
+/* harmony import */ var vuex__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! vuex */ "./node_modules/vuex/dist/vuex.esm.js");
+function ownKeys(object, enumerableOnly) { var keys = Object.keys(object); if (Object.getOwnPropertySymbols) { var symbols = Object.getOwnPropertySymbols(object); if (enumerableOnly) symbols = symbols.filter(function (sym) { return Object.getOwnPropertyDescriptor(object, sym).enumerable; }); keys.push.apply(keys, symbols); } return keys; }
+
+function _objectSpread(target) { for (var i = 1; i < arguments.length; i++) { var source = arguments[i] != null ? arguments[i] : {}; if (i % 2) { ownKeys(Object(source), true).forEach(function (key) { _defineProperty(target, key, source[key]); }); } else if (Object.getOwnPropertyDescriptors) { Object.defineProperties(target, Object.getOwnPropertyDescriptors(source)); } else { ownKeys(Object(source)).forEach(function (key) { Object.defineProperty(target, key, Object.getOwnPropertyDescriptor(source, key)); }); } } return target; }
+
+function _defineProperty(obj, key, value) { if (key in obj) { Object.defineProperty(obj, key, { value: value, enumerable: true, configurable: true, writable: true }); } else { obj[key] = value; } return obj; }
+
 //
 //
 //
@@ -2266,6 +2301,9 @@ __webpack_require__.r(__webpack_exports__);
 //
 //
 //
+//
+//
+
 
 
 /* harmony default export */ __webpack_exports__["default"] = ({
@@ -2278,20 +2316,19 @@ __webpack_require__.r(__webpack_exports__);
       currentCoordinates: {
         lat: 0,
         lng: 0
-      },
-      markers: []
+      } // markers: [],
+
     };
   },
-  methods: {
+  computed: _objectSpread({}, Object(vuex__WEBPACK_IMPORTED_MODULE_2__["mapState"])(['currentPosition', 'pickUpPosition', 'dropOffPosition', 'markers'])),
+  methods: _objectSpread(_objectSpread({}, Object(vuex__WEBPACK_IMPORTED_MODULE_2__["mapMutations"])(['addMarker'])), {}, {
     getCurrentCoordinate: function getCurrentCoordinate() {
       var _this = this;
 
       if (navigator.geolocation) {
         navigator.geolocation.getCurrentPosition(function (position) {
           _this.currentCoordinates.lat = position.coords.latitude;
-          _this.currentCoordinates.lng = position.coords.longitude;
-
-          _this.$emit('position_emitted', _this.currentCoordinates);
+          _this.currentCoordinates.lng = position.coords.longitude; // this.$emit('position_emitted', this.currentCoordinates);
 
           _this.$store.commit('updateCurrentPosition', _this.currentCoordinates);
         }, function (error) {
@@ -2302,12 +2339,13 @@ __webpack_require__.r(__webpack_exports__);
     },
     // mark user's current location
     markCurrentCoordinate: function markCurrentCoordinate() {
-      this.markers.push({
+      this.addMarker({
         position: this.currentCoordinates,
-        label: 'Your Location'
+        label: 'Your Location',
+        status: 'current'
       });
     }
-  },
+  }),
   created: function created() {
     // get user current geo-coordinate
     this.getCurrentCoordinate();
@@ -2354,6 +2392,12 @@ __webpack_require__.r(__webpack_exports__);
     label: {
       type: String,
       "default": null
+    },
+    status: {
+      type: String,
+      validator: function validator(val) {
+        return ['current', 'pickup', 'dropoff'].indexOf(val) !== -1;
+      }
     }
   },
   data: function data() {
@@ -2385,6 +2429,13 @@ __webpack_require__.r(__webpack_exports__);
 __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var _util__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ../util */ "./resources/js/util.js");
 /* harmony import */ var _AutoComplete__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ./AutoComplete */ "./resources/js/components/AutoComplete.vue");
+/* harmony import */ var vuex__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! vuex */ "./node_modules/vuex/dist/vuex.esm.js");
+function ownKeys(object, enumerableOnly) { var keys = Object.keys(object); if (Object.getOwnPropertySymbols) { var symbols = Object.getOwnPropertySymbols(object); if (enumerableOnly) symbols = symbols.filter(function (sym) { return Object.getOwnPropertyDescriptor(object, sym).enumerable; }); keys.push.apply(keys, symbols); } return keys; }
+
+function _objectSpread(target) { for (var i = 1; i < arguments.length; i++) { var source = arguments[i] != null ? arguments[i] : {}; if (i % 2) { ownKeys(Object(source), true).forEach(function (key) { _defineProperty(target, key, source[key]); }); } else if (Object.getOwnPropertyDescriptors) { Object.defineProperties(target, Object.getOwnPropertyDescriptors(source)); } else { ownKeys(Object(source)).forEach(function (key) { Object.defineProperty(target, key, Object.getOwnPropertyDescriptor(source, key)); }); } } return target; }
+
+function _defineProperty(obj, key, value) { if (key in obj) { Object.defineProperty(obj, key, { value: value, enumerable: true, configurable: true, writable: true }); } else { obj[key] = value; } return obj; }
+
 //
 //
 //
@@ -2419,16 +2470,20 @@ __webpack_require__.r(__webpack_exports__);
 //
 //
 //
+//
+//
+//
+
 
 
 /* harmony default export */ __webpack_exports__["default"] = ({
-  props: {
-    position: Object
-  },
   components: {
     Autocomplete: _AutoComplete__WEBPACK_IMPORTED_MODULE_1__["default"]
   },
-  methods: {}
+  computed: _objectSpread({}, Object(vuex__WEBPACK_IMPORTED_MODULE_2__["mapState"])(['currentPosition'])),
+  methods: {},
+  mounted: function mounted() {// setTimeout(()=> {console.log(this.currentPosition)}, 1000)
+  }
 });
 
 /***/ }),
@@ -6932,7 +6987,7 @@ exports = module.exports = __webpack_require__(/*! ../../../node_modules/css-loa
 
 
 // module
-exports.push([module.i, "\n.form-control[data-v-adfaf81a] {\n    background: #f8fafc;\n    border-radius: .75rem;\n}\n.autocomplete-group[data-v-adfaf81a]{\n    position:relative;\n}\n.autocomplete-place[data-v-adfaf81a]{\n    width: 100%;\n    position: absolute;\n    top: 40px;\n    left: 0;\n    z-index: 100;\n    max-height:90vh;\n    overflow-y: scroll;\n}\n", ""]);
+exports.push([module.i, "\n.form-control[data-v-adfaf81a] {\n    background: #f8fafc;\n    border-radius: .75rem;\n}\n.autocomplete-group[data-v-adfaf81a]{\n    position:relative;\n}\n.autocomplete-place[data-v-adfaf81a]{\n    width: 100%;\n    position: absolute;\n    top: 40px;\n    left: 0;\n    z-index: 100;\n    max-height:90vh;\n    overflow-y: scroll;\n}\n.autocomplete-place[data-v-adfaf81a] {\n    transition: all 0.3s ease-in\n}\n.autocomplete-place .list-group-item[data-v-adfaf81a]:hover {\n    cursor: pointer;\n    background: #ddd;\n}\n", ""]);
 
 // exports
 
@@ -40019,26 +40074,13 @@ var render = function() {
           _c(
             "div",
             { staticClass: "col-md-3 col-sm-12" },
-            [_c("RequestForm", { attrs: { position: _vm.position } })],
+            [_c("RequestForm")],
             1
           ),
           _vm._v(" "),
           _c("div", { staticClass: "col-md-9 col-sm-12" }, [
             _c("div", { staticClass: "row" }, [
-              _c(
-                "div",
-                { staticClass: "col-12" },
-                [
-                  _c("Map", {
-                    on: {
-                      position_emitted: function($event) {
-                        return _vm.emitMapPosition($event)
-                      }
-                    }
-                  })
-                ],
-                1
-              )
+              _c("div", { staticClass: "col-12" }, [_c("Map")], 1)
             ])
           ])
         ])
@@ -40071,7 +40113,7 @@ var render = function() {
   var _c = _vm._self._c || _h
   return _c(
     "div",
-    { staticClass: "autocomplete-group" },
+    { staticClass: "autocomplete-group", attrs: { tabindex: "-1" } },
     [
       _c("input", {
         directives: [
@@ -40083,20 +40125,16 @@ var render = function() {
           }
         ],
         ref: "autocomplete",
-        staticClass: "form-control autocomplet-input",
+        staticClass: "form-control autocomplete-input",
         attrs: {
           type: "text",
           placeholder: _vm.placeholder,
-          position: _vm.position,
           status: _vm.status
         },
         domProps: { value: _vm.search },
         on: {
           keyup: function($event) {
             return _vm.queryGoogle()
-          },
-          blur: function($event) {
-            return _vm.clearAutocomplete()
           },
           input: function($event) {
             if ($event.target.composing) {
@@ -40107,10 +40145,7 @@ var render = function() {
         }
       }),
       _vm._v(" "),
-      _vm.status == "pickup" &&
-      _vm.position &&
-      _vm.search &&
-      _vm.search.length < 4
+      _vm.status == "pickup" && _vm.search && _vm.search.length < 4
         ? [
             _c("div", { staticClass: "my-2" }, [
               _c(
@@ -40120,7 +40155,7 @@ var render = function() {
                   attrs: { type: "button" },
                   on: {
                     click: function($event) {
-                      return _vm.getCurrentLocationAddress()
+                      return _vm.getCurrentPositionAddress()
                     }
                   }
                 },
@@ -40143,7 +40178,15 @@ var render = function() {
                 _vm._l(_vm.places, function(place) {
                   return _c(
                     "a",
-                    { key: place.id, staticClass: "list-group-item" },
+                    {
+                      key: place.id,
+                      staticClass: "list-group-item",
+                      on: {
+                        click: function($event) {
+                          return _vm.selectPlace(place)
+                        }
+                      }
+                    },
                     [
                       _c("div", { staticClass: "row" }, [
                         _c("div", { staticClass: "col-2" }, [
@@ -40158,10 +40201,10 @@ var render = function() {
                         ]),
                         _vm._v(" "),
                         _c("div", { staticClass: "col-10" }, [
-                          _c("h6", [_vm._v(_vm._s(place.name))]),
+                          _c("h6", [_vm._v(_vm._s(place.vicinity))]),
                           _vm._v(" "),
                           _c("small", { staticClass: "text-muted" }, [
-                            _vm._v(_vm._s(place.vicinity))
+                            _vm._v(_vm._s(place.name))
                           ])
                         ])
                       ])
@@ -40375,7 +40418,8 @@ var render = function() {
                         position: m.position,
                         map: slotProp.map,
                         title: m.title,
-                        label: m.label
+                        label: m.label,
+                        status: m.status
                       }
                     })
                   ]
@@ -40384,7 +40428,20 @@ var render = function() {
             }
           }
         ])
-      })
+      }),
+      _vm._v(" "),
+      _c(
+        "button",
+        {
+          staticClass: "btn btn-light",
+          on: {
+            click: function($event) {
+              return _vm.getCurrentPosition()
+            }
+          }
+        },
+        [_vm._v("Touch me")]
+      )
     ],
     1
   )
@@ -40449,15 +40506,18 @@ var render = function() {
                 "div",
                 { staticClass: "form-group" },
                 [
-                  _c("Autocomplete", {
-                    attrs: {
-                      position: _vm.position,
-                      placeholder: "PickUp Address",
-                      status: "pickup"
-                    }
-                  })
+                  _vm.currentPosition
+                    ? [
+                        _c("Autocomplete", {
+                          attrs: {
+                            placeholder: "PickUp Address",
+                            status: "pickup"
+                          }
+                        })
+                      ]
+                    : _vm._e()
                 ],
-                1
+                2
               )
             ]),
             _vm._v(" "),
@@ -40466,15 +40526,18 @@ var render = function() {
                 "div",
                 { staticClass: "form-group" },
                 [
-                  _c("Autocomplete", {
-                    attrs: {
-                      position: _vm.position,
-                      placeholder: "DropOff Address",
-                      status: "dropoff"
-                    }
-                  })
+                  _vm.currentPosition
+                    ? [
+                        _c("Autocomplete", {
+                          attrs: {
+                            placeholder: "DropOff Address",
+                            status: "dropoff"
+                          }
+                        })
+                      ]
+                    : _vm._e()
                 ],
-                1
+                2
               )
             ])
           ])
@@ -56394,6 +56457,7 @@ try {
 
 window.axios = __webpack_require__(/*! axios */ "./node_modules/axios/index.js");
 window.axios.defaults.headers.common['X-Requested-With'] = 'XMLHttpRequest';
+window.axios.defaults.headers.common['headers: {"Access-Control-Allow-Origin": "*"}'];
 /**
  * Echo exposes an expressive API for subscribing to channels and listening
  * for events that are broadcast by Laravel. Echo and event broadcasting
@@ -57083,7 +57147,8 @@ __webpack_require__.r(__webpack_exports__);
   state: {
     currentPosition: null,
     pickUpPosition: null,
-    dropOffPosition: null
+    dropOffPosition: null,
+    markers: []
   },
   getters: {},
   mutations: {
@@ -57093,8 +57158,17 @@ __webpack_require__.r(__webpack_exports__);
     updatePickUpPosition: function updatePickUpPosition(state, payload) {
       state.pickUpPosition = payload;
     },
-    updatedropOffPosition: function updatedropOffPosition(state, payload) {
+    updateDropOffPosition: function updateDropOffPosition(state, payload) {
       state.dropOffPosition = payload;
+    },
+    addMarker: function addMarker(state, payload) {
+      state.markers.push(payload);
+
+      if (payload.status == "current") {
+        state.markers.filter(function (x) {
+          return x.status != "current";
+        });
+      }
     }
   },
   actions: {

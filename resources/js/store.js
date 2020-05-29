@@ -3,7 +3,8 @@ export default {
     state: {
         currentPosition: null,
         pickUpPosition: null,
-        dropOffPosition: null
+        dropOffPosition: null,
+        markers: []
     },
     getters: {
 
@@ -18,8 +19,15 @@ export default {
             state.pickUpPosition = payload
         },
 
-        updatedropOffPosition: (state, payload) => {
+        updateDropOffPosition: (state, payload) => {
             state.dropOffPosition = payload
+        },
+
+        addMarker: (state, payload) => {
+            state.markers.push(payload)
+            if (payload.status == "current") {
+                state.markers.filter(x => x.status != "current")
+            }
         },
     },
 

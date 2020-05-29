@@ -14,16 +14,19 @@
                         :map="slotProp.map"
                         :title="m.title"
                         :label="m.label"
+                        :status="m.status"
                     />
                 </template>
             </template>
         </GoogleMap>
+        <button class="btn btn-light" @click="getCurrentPosition()">Touch me</button>
     </div>
 </template>
 
 <script>
 import GoogleMap from './GoogleMap'
 import MapMarker from './MapMarker'
+import {mapState, mapMutations} from 'vuex'
 
 export default {
     components: {
@@ -36,17 +39,28 @@ export default {
                 lat: 0,
                 lng: 0
             },
-            markers: [],
+            // markers: [],
         }
     },
+    computed: {
+        ...mapState([
+            'currentPosition',
+            'pickUpPosition',
+            'dropOffPosition',
+            'markers'
+        ]),
+    },
     methods:{
+        ...mapMutations([
+            'addMarker'
+        ]),
         getCurrentCoordinate() {
             if (navigator.geolocation) {
                 navigator.geolocation.getCurrentPosition(
                     position => {
                         this.currentCoordinates.lat = position.coords.latitude;
                         this.currentCoordinates.lng = position.coords.longitude;
-                        this.$emit('position_emitted', this.currentCoordinates);
+                        // this.$emit('position_emitted', this.currentCoordinates);
                         this.$store.commit('updateCurrentPosition', this.currentCoordinates)
                     },
                     error => {
@@ -59,8 +73,12 @@ export default {
 
         // mark user's current location
         markCurrentCoordinate() {
-            this.markers.push({position: this.currentCoordinates, label: 'Your Location'});
-        }
+            this.addMarker({
+                position: this.currentCoordinates,
+                label: 'Your Location',
+                status: 'current'
+            });
+        },
     },
     created() {
         // get user current geo-coordinate
@@ -68,7 +86,7 @@ export default {
     },
     mounted() {
         this.markCurrentCoordinate();
-    }
+    },
 }
 </script>
 

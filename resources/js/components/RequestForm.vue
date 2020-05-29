@@ -9,20 +9,23 @@
                     <div class="row mt-3">
                         <div class="col-12">
                             <div class="form-group">
-                               <Autocomplete 
-                                    :position="position"
-                                    placeholder="PickUp Address"
-                                    status="pickup"
-                               />
+                                <template v-if="currentPosition">
+
+                                    <Autocomplete 
+                                        placeholder="PickUp Address"
+                                        status="pickup"
+                                    />
+                                </template>
                             </div>
                         </div>
                         <div class="col-12">
                             <div class="form-group">
-                                <Autocomplete 
-                                    :position="position"
-                                    placeholder="DropOff Address"
-                                    status="dropoff"
-                                />
+                                <template v-if="currentPosition">
+                                    <Autocomplete 
+                                        placeholder="DropOff Address"
+                                        status="dropoff"
+                                    />
+                                </template>
                             </div>
                         </div>
                     </div>
@@ -35,16 +38,20 @@
 <script>
 import Util from '../util'
 import Autocomplete from './AutoComplete'
+import {mapState} from 'vuex'
 
 export default {
-    props: {
-        position: Object
-    },
     components: {
         Autocomplete
     },
+    computed: {
+        ...mapState(['currentPosition']),
+    },
     methods: {
-    }
+    },
+    mounted() {
+        // setTimeout(()=> {console.log(this.currentPosition)}, 1000)
+    },
 
 }
 </script>

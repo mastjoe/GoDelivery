@@ -4,12 +4,12 @@
         <div class="container-fluid">
             <div class="row">
                 <div class="col-md-3 col-sm-12">
-                    <RequestForm :position="position" />
+                    <RequestForm  />
                 </div>
                 <div class="col-md-9 col-sm-12">
                     <div class="row">
                         <div class="col-12">
-                            <Map @position_emitted="emitMapPosition($event)" />
+                            <Map  />
                         </div>
                     </div>
                 </div>
@@ -32,13 +32,9 @@ export default {
     },
     data() {
         return {
-            position: null
         }
     },
     methods: {
-        emitMapPosition(event) {
-            this.position = event
-        }
     },
     mounted() {
     }
