@@ -51,15 +51,15 @@ class LocationController extends Controller
     {
         //
         $request->validate([
-            'name'      => 'required|string',
-            'vicinity'  => 'required|string',
-            'latitude'  => 'required|numeric',
-            'longitude' => 'required|numeric'
+            'name'     => 'required|string',
+            'vicinity' => 'required|string',
+            'lat'      => 'required|numeric',
+            'lng'      => 'required|numeric'
         ]);
         
         $geo_target = Location::where(function($query) use($request) {
-            $query->where('longitude', $request->longitude);
-            $query->where('latitude', $request->latitude);
+            $query->where('lng', $request->lng);
+            $query->where('lat', $request->lat);
         })
             ->orWhere(function($query) use($request) {
                 $query->where('name', $request->name);
