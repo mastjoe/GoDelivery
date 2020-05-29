@@ -2095,9 +2095,11 @@ function _defineProperty(obj, key, value) { if (key in obj) { Object.definePrope
     queryLocations: function queryLocations() {
       if (this.search.length < 4 && this.status == "pickup") return false; // attempt local locations
 
-      this.queryDatabaseLocations(); // if (!this.places.length) {
-      //     this.queryGoogle();
-      // } 
+      this.queryDatabaseLocations();
+
+      if (!this.places.length) {
+        this.queryGoogle();
+      }
     },
     getCurrentPositionAddress: function getCurrentPositionAddress() {
       var _this3 = this;

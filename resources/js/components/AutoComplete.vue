@@ -111,9 +111,9 @@ export default {
             if (this.search.length < 4 && this.status == "pickup") return false
             // attempt local locations
             this.queryDatabaseLocations();
-            // if (!this.places.length) {
-            //     this.queryGoogle();
-            // } 
+            if (!this.places.length) {
+                this.queryGoogle();
+            } 
         },
 
 
