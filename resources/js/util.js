@@ -5,6 +5,7 @@ const  Util = {
     test_key    : "AIzaSyBgzzIeLFM4FBmWKSDWVNszczcmKfjey7M",
     searchRadius: 50000,
     proxy       : "http://cors-anywhere.herokuapp.com/",
+    locationURL : "api/v1/locations",
     googleMapApi: async () => {
                     try {
                     return await LoadGoogleMapsApi({

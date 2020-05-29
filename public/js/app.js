@@ -2054,29 +2054,62 @@ function _defineProperty(obj, key, value) { if (key in obj) { Object.definePrope
     queryGoogle: function queryGoogle() {
       var _this = this;
 
-      if (this.search.length < 4 && this.status == "pickup") return false;
       var params = "&key=".concat(_util__WEBPACK_IMPORTED_MODULE_0__["default"].api_key, "&input=").concat(this.search, "&radius=").concat(_util__WEBPACK_IMPORTED_MODULE_0__["default"].searchRadius, "&location=").concat(this.currentPosition.lat, ",").concat(this.currentPosition.lng);
       var url = "".concat(_util__WEBPACK_IMPORTED_MODULE_0__["default"].proxy, "https://maps.googleapis.com/maps/api/place/nearbysearch/json?").concat(params);
       axios__WEBPACK_IMPORTED_MODULE_1___default.a.defaults.headers.get['Content-Type'] = 'application/json';
       axios__WEBPACK_IMPORTED_MODULE_1___default.a.get(url).then(function (_ref) {
         var data = _ref.data;
         _this.places = data.results;
-        console.log(data);
+
+        _this.storeLocations(data.results);
       })["catch"](function (error) {
         return console.log(error);
       });
     },
-    getCurrentPositionAddress: function getCurrentPositionAddress() {
+    queryDatabaseLocations: function queryDatabaseLocations() {
       var _this2 = this;
+
+      axios__WEBPACK_IMPORTED_MODULE_1___default()({
+        method: 'get',
+        url: _util__WEBPACK_IMPORTED_MODULE_0__["default"].locationURL // +'?query='+this.search,
+
+      }).then(function (_ref2) {
+        var data = _ref2.data;
+        data.data.map(function (x) {
+          return {
+            name: x.name,
+            vicinity: x.vicinity,
+            geometry: {
+              location: {
+                lat: x.lat,
+                lng: x.lng
+              }
+            }
+          };
+        });
+        _this2.places = data.data;
+      })["catch"](function (error) {
+        return console.log(error);
+      });
+    },
+    queryLocations: function queryLocations() {
+      if (this.search.length < 4 && this.status == "pickup") return false; // attempt local locations
+
+      this.queryDatabaseLocations(); // if (!this.places.length) {
+      //     this.queryGoogle();
+      // } 
+    },
+    getCurrentPositionAddress: function getCurrentPositionAddress() {
+      var _this3 = this;
 
       var params = "latlng=".concat(this.currentPosition.lat, ",").concat(this.currentPosition.lng, "&key=").concat(_util__WEBPACK_IMPORTED_MODULE_0__["default"].api_key);
       var url = "".concat(_util__WEBPACK_IMPORTED_MODULE_0__["default"].proxy, "https://maps.googleapis.com/maps/api/geocode/json?").concat(params);
-      axios__WEBPACK_IMPORTED_MODULE_1___default.a.get(url).then(function (_ref2) {
-        var data = _ref2.data;
-        _this2.search = data.results[0].formatted_address;
+      axios__WEBPACK_IMPORTED_MODULE_1___default.a.get(url).then(function (_ref3) {
+        var data = _ref3.data;
+        _this3.search = data.results[0].formatted_address;
         var position = data.results[0].geometry.location;
 
-        _this2.handleMarking(position);
+        _this3.handleMarking(position);
       })["catch"](function (error) {
         return console.log(error);
       });
@@ -2086,6 +2119,25 @@ function _defineProperty(obj, key, value) { if (key in obj) { Object.definePrope
     },
     loadCurrentPosition: function loadCurrentPosition() {
       this.currentPosition = this.$store.state.currentPosition;
+    },
+    storeLocations: function storeLocations(places) {
+      places.forEach(function (place) {
+        axios__WEBPACK_IMPORTED_MODULE_1___default()({
+          method: 'post',
+          url: _util__WEBPACK_IMPORTED_MODULE_0__["default"].locationURL,
+          data: {
+            name: place.name,
+            vicinity: place.vicinity,
+            lat: place.geometry.location.lat,
+            lng: place.geometry.location.lng
+          }
+        }).then(function (_ref4) {
+          var data = _ref4.data;
+          data.data;
+        })["catch"](function (error) {
+          return console.log(error);
+        });
+      });
     },
     handleMarking: function handleMarking(position) {
       if (this.status == "pickup") {
@@ -40134,7 +40186,7 @@ var render = function() {
         domProps: { value: _vm.search },
         on: {
           keyup: function($event) {
-            return _vm.queryGoogle()
+            return _vm.queryLocations()
           },
           input: function($event) {
             if ($event.target.composing) {
@@ -57205,6 +57257,7 @@ var Util = {
   test_key: "AIzaSyBgzzIeLFM4FBmWKSDWVNszczcmKfjey7M",
   searchRadius: 50000,
   proxy: "http://cors-anywhere.herokuapp.com/",
+  locationURL: "api/v1/locations",
   googleMapApi: function () {
     var _googleMapApi = _asyncToGenerator( /*#__PURE__*/_babel_runtime_regenerator__WEBPACK_IMPORTED_MODULE_0___default.a.mark(function _callee() {
       return _babel_runtime_regenerator__WEBPACK_IMPORTED_MODULE_0___default.a.wrap(function _callee$(_context) {

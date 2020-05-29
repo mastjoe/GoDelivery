@@ -6,7 +6,7 @@
             ref="autocomplete"
             :status="status"
             v-model="search"
-            @keyup="queryGoogle()"
+            @keyup="queryLocations()"
         >
         <!-- pick current location btn for pickup -->
         <template v-if="status == 'pickup' && search && search.length < 4">
@@ -71,16 +71,51 @@ export default {
         ...mapMutations(['addMarker', 'updatePickUpPosition', 'updateDropOffPosition']),
 
         queryGoogle() {
-            if (this.search.length < 4 && this.status == "pickup") return false
-
             const params = `&key=${Util.api_key}&input=${this.search}&radius=${Util.searchRadius}&location=${this.currentPosition.lat},${this.currentPosition.lng}`
             const url = `${Util.proxy}https://maps.googleapis.com/maps/api/place/nearbysearch/json?${params}`
 
             Axios.defaults.headers.get['Content-Type'] ='application/json';
             Axios.get(url)
-                .then(({data}) => {this.places = data.results; console.log(data)})
+                .then(({data}) => {
+                    this.places = data.results
+                    this.storeLocations(data.results)
+                })
                 .catch(error => console.log(error))
         },
+
+        queryDatabaseLocations() {
+            Axios({
+                method: 'get',
+                url: Util.locationURL,
+                // +'?query='+this.search,
+            })
+                .then(({data}) => {
+                    data.data.map(x => {
+                        return  {
+                            name: x.name,
+                            vicinity: x.vicinity,
+                            geometry: {
+                                location: {
+                                    lat: x.lat,
+                                    lng: x.lng
+                                }
+                            }
+                        }
+                    })
+                    this.places = data.data
+                })
+                .catch(error => console.log(error))
+        },
+
+        queryLocations() {
+            if (this.search.length < 4 && this.status == "pickup") return false
+            // attempt local locations
+            this.queryDatabaseLocations();
+            // if (!this.places.length) {
+            //     this.queryGoogle();
+            // } 
+        },
+
 
         getCurrentPositionAddress() {
             const params =
@@ -106,6 +141,24 @@ export default {
             this.currentPosition = this.$store.state.currentPosition
         },
 
+        storeLocations(places) {
+            places.forEach(place => {
+
+                Axios({
+                    method: 'post',
+                    url: Util.locationURL,
+                    data: {
+                        name: place.name,
+                        vicinity: place.vicinity,
+                        lat: place.geometry.location.lat,
+                        lng: place.geometry.location.lng
+                    }
+                })
+                    .then(({data}) => { data.data })
+                    .catch(error => console.log(error))
+            })
+        },
+        
         handleMarking(position) {
             if (this.status == "pickup") {
                 this.$store.commit('updatePickUpPosition', position)                

@@ -23,8 +23,8 @@ class LocationController extends Controller
         }
 
         if ($request->has('query')) {
-            $q = $request->query;
-
+            $q = $request['query'];
+    
             $locations = Location::where('name', 'LIKE', $q.'%')
                 ->orWhere('vicinity', 'LIKE', $q.'%')
                 ->take($limit)
@@ -64,7 +64,7 @@ class LocationController extends Controller
             ->orWhere(function($query) use($request) {
                 $query->where('name', $request->name);
                 $query->where('vicinity', $request->vicinity);
-            });
+        });
         
         if ($geo_target->count()) {
             $location = $geo_target->first();

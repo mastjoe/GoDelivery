@@ -19,6 +19,7 @@ class CreateLocationsTable extends Migration
             $table->string('vicinity');
             $table->float('lat');
             $table->float('lng');
+            $table->string('icon')->nullable();
             $table->timestamps();
         });
     }
