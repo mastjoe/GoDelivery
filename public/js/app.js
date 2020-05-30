@@ -2071,11 +2071,11 @@ function _defineProperty(obj, key, value) { if (key in obj) { Object.definePrope
 
       axios__WEBPACK_IMPORTED_MODULE_1___default()({
         method: 'get',
-        url: _util__WEBPACK_IMPORTED_MODULE_0__["default"].locationURL // +'?query='+this.search,
-
+        url: _util__WEBPACK_IMPORTED_MODULE_0__["default"].locationURL + '?query=' + this.search
       }).then(function (_ref2) {
         var data = _ref2.data;
-        data.data.map(function (x) {
+        var placesData = data.data;
+        var places = placesData.map(function (x) {
           return {
             name: x.name,
             vicinity: x.vicinity,
@@ -2092,7 +2092,7 @@ function _defineProperty(obj, key, value) { if (key in obj) { Object.definePrope
         return console.log(error);
       });
     },
-    queryLocations: function queryLocations() {
+    queryLocations: _.debounce(function () {
       if (this.search.length < 4 && this.status == "pickup") return false; // attempt local locations
 
       this.queryDatabaseLocations();
@@ -2100,7 +2100,7 @@ function _defineProperty(obj, key, value) { if (key in obj) { Object.definePrope
       if (!this.places.length) {
         this.queryGoogle();
       }
-    },
+    }, 1500),
     getCurrentPositionAddress: function getCurrentPositionAddress() {
       var _this3 = this;
 
@@ -2136,27 +2136,42 @@ function _defineProperty(obj, key, value) { if (key in obj) { Object.definePrope
         }).then(function (_ref4) {
           var data = _ref4.data;
           data.data;
-        })["catch"](function (error) {
-          return console.log(error);
+        })["catch"](function (_ref5) {
+          var response = _ref5.response;
+          return console.log(response);
         });
       });
     },
     handleMarking: function handleMarking(position) {
       if (this.status == "pickup") {
-        this.$store.commit('updatePickUpPosition', position);
         this.$store.commit('addMarker', {
           position: position,
           label: 'Pickup',
           status: 'pickup'
         });
+        this.$store.commit('updatePickUpPosition', position);
       } else {
-        this.$store.commit('updateDropOffPosition', position);
         this.$store.commit('addMarker', {
           position: position,
           label: 'DropOff',
           status: 'dropoff'
         });
+        this.$store.commit('updateDropOffPosition', position);
       }
+
+      this.filterMarkers();
+    },
+    filterMarkers: function filterMarkers() {
+      var markers = this.$store.state.markers;
+      var markersStatuses = markers.map(function (x) {
+        return x.status;
+      });
+
+      if (markersStatuses.indexOf("current") !== -1) {
+        this.$store.commit('removeMarker', "current");
+      }
+
+      console.log(this.$store.state.markers);
     },
     selectPlace: function selectPlace(place) {
       var address = place.vicinity;
@@ -57217,12 +57232,12 @@ __webpack_require__.r(__webpack_exports__);
     },
     addMarker: function addMarker(state, payload) {
       state.markers.push(payload);
-
-      if (payload.status == "current") {
-        state.markers.filter(function (x) {
-          return x.status != "current";
-        });
-      }
+    },
+    removeMarker: function removeMarker(state, status) {
+      var index = state.markers.map(function (item) {
+        return item.status;
+      }).indexOf(status);
+      state.markers.splice(index, 1);
     }
   },
   actions: {

@@ -86,11 +86,12 @@ export default {
         queryDatabaseLocations() {
             Axios({
                 method: 'get',
-                url: Util.locationURL,
-                // +'?query='+this.search,
+                url: Util.locationURL+'?query='+this.search,
             })
                 .then(({data}) => {
-                    data.data.map(x => {
+                    const placesData = data.data
+
+                    const places = placesData.map(x => {
                         return  {
                             name: x.name,
                             vicinity: x.vicinity,
@@ -107,14 +108,14 @@ export default {
                 .catch(error => console.log(error))
         },
 
-        queryLocations() {
+        queryLocations: _.debounce(function() {
             if (this.search.length < 4 && this.status == "pickup") return false
             // attempt local locations
             this.queryDatabaseLocations();
             if (!this.places.length) {
                 this.queryGoogle();
             } 
-        },
+        }, 1500),
 
 
         getCurrentPositionAddress() {
@@ -155,19 +156,30 @@ export default {
                     }
                 })
                     .then(({data}) => { data.data })
-                    .catch(error => console.log(error))
+                    .catch(({response}) => console.log(response))
             })
         },
         
         handleMarking(position) {
             if (this.status == "pickup") {
-                this.$store.commit('updatePickUpPosition', position)                
                 this.$store.commit('addMarker', {position: position, label: 'Pickup', status: 'pickup'})
+                this.$store.commit('updatePickUpPosition', position)                
             } else {
                 
-                this.$store.commit('updateDropOffPosition', position)
                 this.$store.commit('addMarker', {position: position, label: 'DropOff', status: 'dropoff'})
+                this.$store.commit('updateDropOffPosition', position)
             }
+            this.filterMarkers();
+        },
+
+        filterMarkers() {
+            const markers = this.$store.state.markers
+            const markersStatuses = markers.map(x => x.status)
+
+            if (markersStatuses.indexOf("current") !== -1) {
+                this.$store.commit('removeMarker', "current")
+            }
+            console.log(this.$store.state.markers)
         },
 
         selectPlace(place) {

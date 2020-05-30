@@ -7,7 +7,6 @@ export default {
         markers: []
     },
     getters: {
-
     },
 
     mutations:{
@@ -25,9 +24,11 @@ export default {
 
         addMarker: (state, payload) => {
             state.markers.push(payload)
-            if (payload.status == "current") {
-                state.markers.filter(x => x.status != "current")
-            }
+        },
+
+        removeMarker: (state, status) => {
+            const index = state.markers.map(item => item.status).indexOf(status);
+            state.markers.splice(index, 1);
         },
     },
 
