@@ -28,7 +28,23 @@
                                 </template>
                             </div>
                         </div>
+                        <div class="col-12">
+                            <div class="row mt-5" v-if="pickUpPosition && dropOffPosition">
+                                <div class="col-6">
+                                    <h6>&#8358;1500.00</h6>
+                                </div>
+                                <div class="col-6">
+                                    3.3km | 24 mins
+                                </div>
+                                <div class="col-12 mt-2">
+                                    <button class="btn btn-block btn-success">
+                                        Enter Parcel Details
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
                     </div>
+
                 </div>
             </div>
         </form>
@@ -45,7 +61,7 @@ export default {
         Autocomplete
     },
     computed: {
-        ...mapState(['currentPosition']),
+        ...mapState(['currentPosition', 'pickUpPosition', 'dropOffPosition']),
     },
     methods: {
     },

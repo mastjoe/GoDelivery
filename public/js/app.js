@@ -2542,6 +2542,22 @@ function _defineProperty(obj, key, value) { if (key in obj) { Object.definePrope
 //
 //
 //
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
 
 
 
@@ -2549,7 +2565,7 @@ function _defineProperty(obj, key, value) { if (key in obj) { Object.definePrope
   components: {
     Autocomplete: _AutoComplete__WEBPACK_IMPORTED_MODULE_1__["default"]
   },
-  computed: _objectSpread({}, Object(vuex__WEBPACK_IMPORTED_MODULE_2__["mapState"])(['currentPosition'])),
+  computed: _objectSpread({}, Object(vuex__WEBPACK_IMPORTED_MODULE_2__["mapState"])(['currentPosition', 'pickUpPosition', 'dropOffPosition'])),
   methods: {},
   mounted: function mounted() {// setTimeout(()=> {console.log(this.currentPosition)}, 1000)
   }
@@ -40608,6 +40624,22 @@ var render = function() {
                 ],
                 2
               )
+            ]),
+            _vm._v(" "),
+            _c("div", { staticClass: "col-12" }, [
+              _vm.pickUpPosition && _vm.dropOffPosition
+                ? _c("div", { staticClass: "row mt-5" }, [
+                    _vm._m(0),
+                    _vm._v(" "),
+                    _c("div", { staticClass: "col-6" }, [
+                      _vm._v(
+                        "\n                                3.3km | 24 mins\n                            "
+                      )
+                    ]),
+                    _vm._v(" "),
+                    _vm._m(1)
+                  ])
+                : _vm._e()
             ])
           ])
         ])
@@ -40615,7 +40647,26 @@ var render = function() {
     ])
   ])
 }
-var staticRenderFns = []
+var staticRenderFns = [
+  function() {
+    var _vm = this
+    var _h = _vm.$createElement
+    var _c = _vm._self._c || _h
+    return _c("div", { staticClass: "col-6" }, [_c("h6", [_vm._v("₦1500.00")])])
+  },
+  function() {
+    var _vm = this
+    var _h = _vm.$createElement
+    var _c = _vm._self._c || _h
+    return _c("div", { staticClass: "col-12 mt-2" }, [
+      _c("button", { staticClass: "btn btn-block btn-success" }, [
+        _vm._v(
+          "\n                                    Enter Parcel Details\n                                "
+        )
+      ])
+    ])
+  }
+]
 render._withStripped = true
 
 
