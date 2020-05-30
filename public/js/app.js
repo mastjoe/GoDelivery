@@ -40658,7 +40658,7 @@ var staticRenderFns = [
     var _vm = this
     var _h = _vm.$createElement
     var _c = _vm._self._c || _h
-    return _c("div", { staticClass: "col-12 mt-2" }, [
+    return _c("div", { staticClass: "col-12 py-3" }, [
       _c("button", { staticClass: "btn btn-block btn-success" }, [
         _vm._v(
           "\n                                    Enter Parcel Details\n                                "

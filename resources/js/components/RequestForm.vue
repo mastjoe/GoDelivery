@@ -36,7 +36,7 @@
                                 <div class="col-6">
                                     3.3km | 24 mins
                                 </div>
-                                <div class="col-12 mt-2">
+                                <div class="col-12 py-3">
                                     <button class="btn btn-block btn-success">
                                         Enter Parcel Details
                                     </button>
